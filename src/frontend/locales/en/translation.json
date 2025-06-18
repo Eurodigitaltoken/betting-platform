@@ -1,0 +1,91 @@
+{
+  "en": {
+    "common": {
+      "appName": "USDT Betting Platform",
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "submit": "Submit",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "back": "Back",
+      "next": "Next"
+    },
+    "navigation": {
+      "home": "Home",
+      "sports": "Sports",
+      "live": "Live Events",
+      "account": "My Account",
+      "bets": "My Bets",
+      "wallet": "Wallet"
+    },
+    "sports": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis",
+      "nfl": "NFL",
+      "hockey": "Ice Hockey",
+      "all": "All Sports"
+    },
+    "betting": {
+      "odds": "Odds",
+      "stake": "Stake",
+      "potentialWin": "Potential Win",
+      "fee": "Fee (2%)",
+      "totalStake": "Total Stake",
+      "placeBet": "Place Bet",
+      "maxBet": "Maximum bet is 9999 USDT",
+      "minBet": "Minimum bet is 1 USDT",
+      "betConfirmation": "Bet Confirmation",
+      "betPlaced": "Your bet has been placed successfully",
+      "betFailed": "Failed to place bet",
+      "homeWin": "Home Win",
+      "awayWin": "Away Win",
+      "draw": "Draw"
+    },
+    "account": {
+      "login": "Login",
+      "register": "Register",
+      "logout": "Logout",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "username": "Username",
+      "balance": "Balance",
+      "deposit": "Deposit",
+      "withdraw": "Withdraw",
+      "history": "History",
+      "profile": "Profile",
+      "settings": "Settings",
+      "language": "Language"
+    },
+    "wallet": {
+      "address": "Ethereum Address",
+      "balance": "USDT Balance",
+      "depositAddress": "Deposit Address",
+      "withdrawAddress": "Withdraw Address",
+      "amount": "Amount",
+      "transactionHistory": "Transaction History",
+      "pending": "Pending",
+      "completed": "Completed",
+      "failed": "Failed",
+      "date": "Date",
+      "type": "Type",
+      "status": "Status",
+      "txHash": "Transaction Hash"
+    },
+    "errors": {
+      "required": "This field is required",
+      "invalidEmail": "Invalid email address",
+      "passwordMismatch": "Passwords do not match",
+      "invalidAmount": "Invalid amount",
+      "insufficientFunds": "Insufficient funds",
+      "networkError": "Network error, please try again",
+      "authError": "Authentication error",
+      "unknownError": "Unknown error occurred"
+    }
+  }
+}

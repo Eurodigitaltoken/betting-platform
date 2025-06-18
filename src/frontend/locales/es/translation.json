@@ -1,0 +1,91 @@
+{
+  "es": {
+    "common": {
+      "appName": "Plataforma de Apuestas USDT",
+      "loading": "Cargando...",
+      "error": "Error",
+      "success": "Éxito",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "submit": "Enviar",
+      "save": "Guardar",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "back": "Atrás",
+      "next": "Siguiente"
+    },
+    "navigation": {
+      "home": "Inicio",
+      "sports": "Deportes",
+      "live": "Eventos en Vivo",
+      "account": "Mi Cuenta",
+      "bets": "Mis Apuestas",
+      "wallet": "Billetera"
+    },
+    "sports": {
+      "football": "Fútbol",
+      "basketball": "Baloncesto",
+      "tennis": "Tenis",
+      "nfl": "NFL",
+      "hockey": "Hockey sobre Hielo",
+      "all": "Todos los Deportes"
+    },
+    "betting": {
+      "odds": "Cuotas",
+      "stake": "Apuesta",
+      "potentialWin": "Ganancia Potencial",
+      "fee": "Comisión (2%)",
+      "totalStake": "Apuesta Total",
+      "placeBet": "Realizar Apuesta",
+      "maxBet": "La apuesta máxima es de 9999 USDT",
+      "minBet": "La apuesta mínima es de 1 USDT",
+      "betConfirmation": "Confirmación de Apuesta",
+      "betPlaced": "Su apuesta ha sido realizada con éxito",
+      "betFailed": "Error al realizar la apuesta",
+      "homeWin": "Victoria Local",
+      "awayWin": "Victoria Visitante",
+      "draw": "Empate"
+    },
+    "account": {
+      "login": "Iniciar Sesión",
+      "register": "Registrarse",
+      "logout": "Cerrar Sesión",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "username": "Nombre de Usuario",
+      "balance": "Saldo",
+      "deposit": "Depositar",
+      "withdraw": "Retirar",
+      "history": "Historial",
+      "profile": "Perfil",
+      "settings": "Configuración",
+      "language": "Idioma"
+    },
+    "wallet": {
+      "address": "Dirección Ethereum",
+      "balance": "Saldo USDT",
+      "depositAddress": "Dirección de Depósito",
+      "withdrawAddress": "Dirección de Retiro",
+      "amount": "Cantidad",
+      "transactionHistory": "Historial de Transacciones",
+      "pending": "Pendiente",
+      "completed": "Completado",
+      "failed": "Fallido",
+      "date": "Fecha",
+      "type": "Tipo",
+      "status": "Estado",
+      "txHash": "Hash de Transacción"
+    },
+    "errors": {
+      "required": "Este campo es obligatorio",
+      "invalidEmail": "Dirección de correo electrónico inválida",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "invalidAmount": "Cantidad inválida",
+      "insufficientFunds": "Fondos insuficientes",
+      "networkError": "Error de red, por favor intente de nuevo",
+      "authError": "Error de autenticación",
+      "unknownError": "Ha ocurrido un error desconocido"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "fr": {
+    "common": {
+      "appName": "Plateforme de Paris USDT",
+      "loading": "Chargement...",
+      "error": "Erreur",
+      "success": "Succès",
+      "cancel": "Annuler",
+      "confirm": "Confirmer",
+      "submit": "Soumettre",
+      "save": "Enregistrer",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "back": "Retour",
+      "next": "Suivant"
+    },
+    "navigation": {
+      "home": "Accueil",
+      "sports": "Sports",
+      "live": "Événements en Direct",
+      "account": "Mon Compte",
+      "bets": "Mes Paris",
+      "wallet": "Portefeuille"
+    },
+    "sports": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis",
+      "nfl": "NFL",
+      "hockey": "Hockey sur Glace",
+      "all": "Tous les Sports"
+    },
+    "betting": {
+      "odds": "Cotes",
+      "stake": "Mise",
+      "potentialWin": "Gain Potentiel",
+      "fee": "Frais (2%)",
+      "totalStake": "Mise Totale",
+      "placeBet": "Placer le Pari",
+      "maxBet": "La mise maximale est de 9999 USDT",
+      "minBet": "La mise minimale est de 1 USDT",
+      "betConfirmation": "Confirmation du Pari",
+      "betPlaced": "Votre pari a été placé avec succès",
+      "betFailed": "Échec du placement du pari",
+      "homeWin": "Victoire à Domicile",
+      "awayWin": "Victoire à l'Extérieur",
+      "draw": "Match Nul"
+    },
+    "account": {
+      "login": "Connexion",
+      "register": "S'inscrire",
+      "logout": "Déconnexion",
+      "email": "Email",
+      "password": "Mot de Passe",
+      "confirmPassword": "Confirmer le Mot de Passe",
+      "username": "Nom d'Utilisateur",
+      "balance": "Solde",
+      "deposit": "Dépôt",
+      "withdraw": "Retrait",
+      "history": "Historique",
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "language": "Langue"
+    },
+    "wallet": {
+      "address": "Adresse Ethereum",
+      "balance": "Solde USDT",
+      "depositAddress": "Adresse de Dépôt",
+      "withdrawAddress": "Adresse de Retrait",
+      "amount": "Montant",
+      "transactionHistory": "Historique des Transactions",
+      "pending": "En Attente",
+      "completed": "Terminé",
+      "failed": "Échoué",
+      "date": "Date",
+      "type": "Type",
+      "status": "Statut",
+      "txHash": "Hash de Transaction"
+    },
+    "errors": {
+      "required": "Ce champ est obligatoire",
+      "invalidEmail": "Adresse email invalide",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "invalidAmount": "Montant invalide",
+      "insufficientFunds": "Fonds insuffisants",
+      "networkError": "Erreur réseau, veuillez réessayer",
+      "authError": "Erreur d'authentification",
+      "unknownError": "Une erreur inconnue s'est produite"
+    }
+  }
+}

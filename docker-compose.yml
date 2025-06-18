@@ -1,0 +1,107 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    networks:
+      - betting-network
+
+  # Redis for WebSocket and caching
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - betting-network
+
+  # Ganache for local Ethereum blockchain
+  ganache:
+    image: trufflesuite/ganache:latest
+    container_name: ganache
+    ports:
+      - "8545:8545"
+    command: >
+      --deterministic
+      --mnemonic "test test test test test test test test test test test junk"
+      --networkId 5777
+      --chain.vmErrorsOnRPCResponse true
+      --chain.allowUnlimitedContractSize true
+    networks:
+      - betting-network
+
+  # Backend service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: backend
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - redis
+      - ganache
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DB_URI=mongodb://admin:password@mongodb:27017/betting_platform?authSource=admin
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=local_development_secret_key
+      - JWT_EXPIRES_IN=7d
+      - WEB3_PROVIDER=http://ganache:8545
+      - PLATFORM_WALLET=0x3AbA3Eb93572e77fD9bAABAD2EA26123750fECf3
+      - ADMIN_FEE_WALLET=0xE4A87598050D7877a79E2BEff12A25Be636c557e
+      - CORS_ORIGIN=http://localhost:3000
+    volumes:
+      - ./src/backend:/app/src/backend
+      - ./src/blockchain:/app/src/blockchain
+      - node_modules_backend:/app/node_modules
+    networks:
+      - betting-network
+
+  # Frontend service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001/api
+      - REACT_APP_WS_URL=http://localhost:3001
+      - REACT_APP_NETWORK_ID=5777
+      - REACT_APP_WEB3_PROVIDER=http://localhost:8545
+    volumes:
+      - ./src/frontend:/app/src/frontend
+      - node_modules_frontend:/app/node_modules
+    networks:
+      - betting-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+  node_modules_backend:
+  node_modules_frontend:
+
+networks:
+  betting-network:
+    driver: bridge
