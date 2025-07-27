@@ -42,12 +42,14 @@ function App() {
   const [activeTab, setActiveTab] = useState("home")
   const [searchQuery, setSearchQuery] = useState("")
   const [favoriteEvents, setFavoriteEvents] = useState([])
+  const [showDateDropdown, setShowDateDropdown] = useState(false)
 
   const sports = [
     { id: 'all', name: 'All', icon: '🏆' },
     { id: 'football', name: 'Football', icon: '⚽' },
     { id: 'basketball', name: 'Basketball', icon: '🏀' },
-    { id: 'tennis', name: 'Tennis', icon: '🎾' }
+    { id: 'tennis', name: 'Tennis', icon: '🎾' },
+    { id: 'hockey', name: 'NHL', icon: '🏒' }
   ]
 
   // Real-time data fetching function
@@ -55,6 +57,7 @@ function App() {
     try {
       // Simulate API call to SofaScore or similar service
       const footballEvents = [
+        // Premier League (England)
         {
           id: 1,
           homeTeam: "Manchester United",
@@ -67,6 +70,18 @@ function App() {
           country: "England"
         },
         {
+          id: 9,
+          homeTeam: "Arsenal",
+          awayTeam: "Chelsea",
+          league: "Premier League",
+          sport: "football",
+          startTime: "2024-07-21T17:30:00Z",
+          status: "upcoming",
+          odds: { home: 2.3, draw: 3.1, away: 3.0 },
+          country: "England"
+        },
+        // La Liga (Spain)
+        {
           id: 6,
           homeTeam: "Real Madrid",
           awayTeam: "Barcelona",
@@ -77,6 +92,18 @@ function App() {
           odds: { home: 1.8, draw: 3.5, away: 4.2 },
           country: "Spain"
         },
+        {
+          id: 10,
+          homeTeam: "Atletico Madrid",
+          awayTeam: "Sevilla",
+          league: "La Liga",
+          sport: "football",
+          startTime: "2024-07-21T19:00:00Z",
+          status: "upcoming",
+          odds: { home: 2.0, draw: 3.3, away: 3.5 },
+          country: "Spain"
+        },
+        // Bundesliga (Germany)
         {
           id: 7,
           homeTeam: "Bayern Munich",
@@ -89,6 +116,18 @@ function App() {
           country: "Germany"
         },
         {
+          id: 11,
+          homeTeam: "RB Leipzig",
+          awayTeam: "Bayer Leverkusen",
+          league: "Bundesliga",
+          sport: "football",
+          startTime: "2024-07-21T15:30:00Z",
+          status: "upcoming",
+          odds: { home: 2.2, draw: 3.4, away: 3.1 },
+          country: "Germany"
+        },
+        // Ligue 1 (France)
+        {
           id: 8,
           homeTeam: "PSG",
           awayTeam: "Marseille",
@@ -98,10 +137,45 @@ function App() {
           status: "upcoming",
           odds: { home: 1.4, draw: 4.5, away: 7.0 },
           country: "France"
+        },
+        {
+          id: 12,
+          homeTeam: "Lyon",
+          awayTeam: "Monaco",
+          league: "Ligue 1",
+          sport: "football",
+          startTime: "2024-07-21T17:00:00Z",
+          status: "upcoming",
+          odds: { home: 2.5, draw: 3.2, away: 2.8 },
+          country: "France"
+        },
+        // Serie A (Italy)
+        {
+          id: 13,
+          homeTeam: "Juventus",
+          awayTeam: "AC Milan",
+          league: "Serie A",
+          sport: "football",
+          startTime: "2024-07-21T20:45:00Z",
+          status: "upcoming",
+          odds: { home: 2.1, draw: 3.3, away: 3.4 },
+          country: "Italy"
+        },
+        {
+          id: 14,
+          homeTeam: "Inter Milan",
+          awayTeam: "AS Roma",
+          league: "Serie A",
+          sport: "football",
+          startTime: "2024-07-21T18:00:00Z",
+          status: "upcoming",
+          odds: { home: 1.9, draw: 3.5, away: 4.0 },
+          country: "Italy"
         }
       ]
 
       const basketballEvents = [
+        // NBA
         {
           id: 2,
           homeTeam: "Lakers",
@@ -112,6 +186,40 @@ function App() {
           status: "upcoming",
           odds: { home: 1.9, away: 1.95 },
           country: "USA"
+        },
+        {
+          id: 15,
+          homeTeam: "Boston Celtics",
+          awayTeam: "Miami Heat",
+          league: "NBA",
+          sport: "basketball",
+          startTime: "2024-07-21T19:30:00Z",
+          status: "upcoming",
+          odds: { home: 1.8, away: 2.1 },
+          country: "USA"
+        },
+        // EuroLeague
+        {
+          id: 16,
+          homeTeam: "Real Madrid",
+          awayTeam: "Barcelona",
+          league: "EuroLeague",
+          sport: "basketball",
+          startTime: "2024-07-21T20:30:00Z",
+          status: "upcoming",
+          odds: { home: 1.7, away: 2.2 },
+          country: "Europe"
+        },
+        {
+          id: 17,
+          homeTeam: "Fenerbahce",
+          awayTeam: "Panathinaikos",
+          league: "EuroLeague",
+          sport: "basketball",
+          startTime: "2024-07-21T18:45:00Z",
+          status: "upcoming",
+          odds: { home: 2.0, away: 1.85 },
+          country: "Europe"
         }
       ]
 
@@ -126,6 +234,43 @@ function App() {
           status: "upcoming",
           odds: { home: 1.6, away: 2.4 },
           country: "England"
+        }
+      ]
+
+      const hockeyEvents = [
+        // NHL
+        {
+          id: 18,
+          homeTeam: "Toronto Maple Leafs",
+          awayTeam: "Montreal Canadiens",
+          league: "NHL",
+          sport: "hockey",
+          startTime: "2024-07-21T19:00:00Z",
+          status: "upcoming",
+          odds: { home: 1.8, away: 2.1 },
+          country: "Canada"
+        },
+        {
+          id: 19,
+          homeTeam: "Boston Bruins",
+          awayTeam: "New York Rangers",
+          league: "NHL",
+          sport: "hockey",
+          startTime: "2024-07-21T20:00:00Z",
+          status: "upcoming",
+          odds: { home: 1.9, away: 1.95 },
+          country: "USA"
+        },
+        {
+          id: 20,
+          homeTeam: "Tampa Bay Lightning",
+          awayTeam: "Florida Panthers",
+          league: "NHL",
+          sport: "hockey",
+          startTime: "2024-07-21T19:30:00Z",
+          status: "upcoming",
+          odds: { home: 2.1, away: 1.8 },
+          country: "USA"
         }
       ]
 
@@ -158,7 +303,7 @@ function App() {
         }
       ]
 
-      setEvents([...footballEvents, ...basketballEvents, ...tennisEvents])
+      setEvents([...footballEvents, ...basketballEvents, ...tennisEvents, ...hockeyEvents])
       setLiveEvents(liveFootballEvents)
       
     } catch (error) {
@@ -334,6 +479,25 @@ function App() {
     return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' })
   }
 
+  const generateCalendarDates = () => {
+    const dates = []
+    const today = new Date()
+    
+    // Generate 14 days (7 past + today + 6 future)
+    for (let i = -7; i <= 6; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      dates.push(date)
+    }
+    
+    return dates
+  }
+
+  const selectDate = (date) => {
+    setCurrentDate(date)
+    setShowDateDropdown(false)
+  }
+
   const changeDate = (direction) => {
     const newDate = new Date(currentDate)
     newDate.setDate(newDate.getDate() + direction)
@@ -432,8 +596,12 @@ function App() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="px-2 py-1 text-xs"
-                  onClick={() => addToBetSlip(event, event.homeTeam, event.odds.home)}
+                  className="px-2 py-1 text-xs hover:bg-blue-50 active:bg-blue-100"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToBetSlip(event, event.homeTeam, event.odds.home);
+                  }}
                 >
                   {event.odds.home}
                 </Button>
@@ -441,8 +609,12 @@ function App() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="px-2 py-1 text-xs"
-                    onClick={() => addToBetSlip(event, 'Draw', event.odds.draw)}
+                    className="px-2 py-1 text-xs hover:bg-blue-50 active:bg-blue-100"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addToBetSlip(event, 'Draw', event.odds.draw);
+                    }}
                   >
                     {event.odds.draw}
                   </Button>
@@ -450,8 +622,12 @@ function App() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="px-2 py-1 text-xs"
-                  onClick={() => addToBetSlip(event, event.awayTeam, event.odds.away)}
+                  className="px-2 py-1 text-xs hover:bg-blue-50 active:bg-blue-100"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addToBetSlip(event, event.awayTeam, event.odds.away);
+                  }}
                 >
                   {event.odds.away}
                 </Button>
@@ -515,17 +691,52 @@ function App() {
       <div className="p-4">
         {/* Date Selector */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 bg-white rounded-lg p-2">
-            <Button variant="ghost" size="sm" onClick={() => changeDate(-1)}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-2 px-2">
-              <Calendar className="h-4 w-4" />
-              <span className="font-medium">{formatDate(currentDate)}</span>
+          <div className="relative">
+            <div 
+              className="flex items-center gap-2 bg-white rounded-lg p-2 cursor-pointer"
+              onClick={() => setShowDateDropdown(!showDateDropdown)}
+            >
+              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); changeDate(-1); }}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-2 px-2">
+                <Calendar className="h-4 w-4" />
+                <span className="font-medium">{formatDate(currentDate)}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); changeDate(1); }}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => changeDate(1)}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            
+            {/* Dropdown Calendar */}
+            {showDateDropdown && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg p-4 z-20 min-w-[280px]">
+                <div className="grid grid-cols-7 gap-2">
+                  {generateCalendarDates().map((date, index) => {
+                    const isToday = date.toDateString() === new Date().toDateString()
+                    const isSelected = date.toDateString() === currentDate.toDateString()
+                    
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => selectDate(date)}
+                        className={`
+                          w-8 h-8 rounded-md text-sm font-medium transition-colors
+                          ${isSelected 
+                            ? 'bg-blue-600 text-white' 
+                            : isToday 
+                              ? 'bg-blue-100 text-blue-600 border border-blue-300' 
+                              : 'hover:bg-gray-100 text-gray-700'
+                          }
+                        `}
+                      >
+                        {date.getDate()}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="flex items-center gap-2">
