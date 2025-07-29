@@ -43,6 +43,15 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("")
   const [favoriteEvents, setFavoriteEvents] = useState([])
   const [showDateDropdown, setShowDateDropdown] = useState(false)
+  const [walletBalance, setWalletBalance] = useState(0)
+  const [individualBets, setIndividualBets] = useState([])
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [depositAmount, setDepositAmount] = useState('')
+  const [accumulatorBetSlip, setAccumulatorBetSlip] = useState([])
+  const [accumulatorAmount, setAccumulatorAmount] = useState('')
+  const [showBalanceModal, setShowBalanceModal] = useState(false)
+  const [lastActivity, setLastActivity] = useState(Date.now())
+  const [inactivityTimer, setInactivityTimer] = useState(null)
 
   const sports = [
     { id: 'all', name: 'All', icon: '🏆' },
@@ -79,6 +88,40 @@ function App() {
           status: "upcoming",
           odds: { home: 2.3, draw: 3.1, away: 3.0 },
           country: "England"
+        },
+        // Champions League
+        {
+          id: 21,
+          homeTeam: "Real Madrid",
+          awayTeam: "Manchester City",
+          league: "Champions League",
+          sport: "football",
+          startTime: "2024-07-21T20:00:00Z",
+          status: "upcoming",
+          odds: { home: 2.2, draw: 3.1, away: 3.3 },
+          country: "Europe"
+        },
+        {
+          id: 22,
+          homeTeam: "Barcelona",
+          awayTeam: "Bayern Munich",
+          league: "Champions League",
+          sport: "football",
+          startTime: "2024-07-21T20:00:00Z",
+          status: "upcoming",
+          odds: { home: 2.5, draw: 3.0, away: 2.8 },
+          country: "Europe"
+        },
+        {
+          id: 23,
+          homeTeam: "PSG",
+          awayTeam: "Arsenal",
+          league: "Champions League",
+          sport: "football",
+          startTime: "2024-07-21T20:00:00Z",
+          status: "upcoming",
+          odds: { home: 1.9, draw: 3.4, away: 4.1 },
+          country: "Europe"
         },
         // La Liga (Spain)
         {
@@ -171,6 +214,74 @@ function App() {
           status: "upcoming",
           odds: { home: 1.9, draw: 3.5, away: 4.0 },
           country: "Italy"
+        },
+        // Brasileirão (Brazil)
+        {
+          id: 24,
+          homeTeam: "Flamengo",
+          awayTeam: "Palmeiras",
+          league: "Brasileirão",
+          sport: "football",
+          startTime: "2024-07-21T23:00:00Z",
+          status: "upcoming",
+          odds: { home: 2.1, draw: 3.2, away: 3.5 },
+          country: "Brazil"
+        },
+        {
+          id: 25,
+          homeTeam: "São Paulo",
+          awayTeam: "Corinthians",
+          league: "Brasileirão",
+          sport: "football",
+          startTime: "2024-07-21T21:30:00Z",
+          status: "upcoming",
+          odds: { home: 2.3, draw: 3.1, away: 3.0 },
+          country: "Brazil"
+        },
+        {
+          id: 26,
+          homeTeam: "Santos",
+          awayTeam: "Grêmio",
+          league: "Brasileirão",
+          sport: "football",
+          startTime: "2024-07-21T22:00:00Z",
+          status: "upcoming",
+          odds: { home: 2.0, draw: 3.3, away: 3.6 },
+          country: "Brazil"
+        },
+        // Liga Profesional (Argentina)
+        {
+          id: 27,
+          homeTeam: "Boca Juniors",
+          awayTeam: "River Plate",
+          league: "Liga Profesional",
+          sport: "football",
+          startTime: "2024-07-21T22:15:00Z",
+          status: "upcoming",
+          odds: { home: 2.4, draw: 3.0, away: 2.9 },
+          country: "Argentina"
+        },
+        {
+          id: 28,
+          homeTeam: "Racing Club",
+          awayTeam: "Independiente",
+          league: "Liga Profesional",
+          sport: "football",
+          startTime: "2024-07-21T20:30:00Z",
+          status: "upcoming",
+          odds: { home: 2.1, draw: 3.2, away: 3.4 },
+          country: "Argentina"
+        },
+        {
+          id: 29,
+          homeTeam: "San Lorenzo",
+          awayTeam: "Estudiantes",
+          league: "Liga Profesional",
+          sport: "football",
+          startTime: "2024-07-21T19:45:00Z",
+          status: "upcoming",
+          odds: { home: 2.6, draw: 3.1, away: 2.7 },
+          country: "Argentina"
         }
       ]
 
@@ -300,6 +411,19 @@ function App() {
           minute: "20:00",
           odds: { home: 2.3, draw: 3.1, away: 2.8 },
           country: "Serbia"
+        },
+        {
+          id: 30,
+          homeTeam: "Liverpool",
+          awayTeam: "Manchester United",
+          league: "Premier League",
+          sport: "football",
+          startTime: "2024-07-21T14:00:00Z",
+          status: "live",
+          score: { home: 2, away: 1 },
+          minute: "78'",
+          odds: { home: 1.5, draw: 4.0, away: 6.5 },
+          country: "England"
         }
       ]
 
@@ -353,27 +477,115 @@ function App() {
     return () => clearInterval(interval)
   }, [isWalletConnected])
 
-  const addToBetSlip = (event, selection, odds) => {
-    const existingBet = betSlip.find(bet => bet.eventId === event.id)
+  const addToAccumulatorBetSlip = (event, selection, odds) => {
+    // Don't allow betting on live events
+    if (event.status === 'live') {
+      alert('Klađenje na događaje koji su već započeli nije dozvoljeno!')
+      return
+    }
+
+    // Check if event is already in accumulator
+    const existingBet = accumulatorBetSlip.find(bet => bet.eventId === event.id)
     if (existingBet) {
-      setBetSlip(betSlip.map(bet => 
+      // Update existing bet
+      setAccumulatorBetSlip(accumulatorBetSlip.map(bet => 
         bet.eventId === event.id 
           ? { ...bet, selection, odds }
           : bet
       ))
     } else {
-      setBetSlip([...betSlip, {
+      // Add new bet to accumulator
+      const newBet = {
         eventId: event.id,
         eventName: `${event.homeTeam} vs ${event.awayTeam}`,
+        league: event.league,
         selection,
         odds,
         sport: event.sport
-      }])
+      }
+      
+      setAccumulatorBetSlip([...accumulatorBetSlip, newBet])
     }
   }
 
-  const removeFromBetSlip = (eventId) => {
-    setBetSlip(betSlip.filter(bet => bet.eventId !== eventId))
+  const removeFromAccumulatorBetSlip = (eventId) => {
+    setAccumulatorBetSlip(accumulatorBetSlip.filter(bet => bet.eventId !== eventId))
+  }
+
+  const calculateAccumulatorOdds = () => {
+    if (accumulatorBetSlip.length === 0) return 0
+    return accumulatorBetSlip.reduce((total, bet) => total * bet.odds, 1)
+  }
+
+  const calculateAccumulatorPotentialWin = () => {
+    if (!accumulatorAmount || accumulatorBetSlip.length === 0) return 0
+    const amount = parseFloat(accumulatorAmount)
+    const totalOdds = calculateAccumulatorOdds()
+    return amount * totalOdds
+  }
+
+  const placeAccumulatorBet = () => {
+    if (accumulatorBetSlip.length === 0 || !accumulatorAmount || parseFloat(accumulatorAmount) > walletBalance) return
+    
+    const amount = parseFloat(accumulatorAmount)
+    
+    // Deduct from wallet balance
+    setWalletBalance(prev => prev - amount)
+    localStorage.setItem('userBalance', (walletBalance - amount).toString())
+    
+    // Add to user bets
+    const newUserBet = {
+      id: Date.now(),
+      type: 'accumulator',
+      events: accumulatorBetSlip,
+      amount: amount,
+      totalOdds: calculateAccumulatorOdds(),
+      potentialWin: calculateAccumulatorPotentialWin(),
+      status: 'Active',
+      placedAt: new Date().toISOString()
+    }
+    
+    setUserBets([...userBets, newUserBet])
+    
+    // Clear accumulator
+    setAccumulatorBetSlip([])
+    setAccumulatorAmount('')
+    
+    alert(`Akumulator oklada uspješno postavljena!\nBroj događaja: ${newUserBet.events.length}\nUkupni koeficijent: ${newUserBet.totalOdds.toFixed(2)}\nIznos: ${amount} USDT\nPotencijalni dobitak: ${newUserBet.potentialWin.toFixed(2)} USDT\n\n⚠️ Transakcija se izvršava na Polygon blockchain mreži\n\nNapomena: Svi događaji moraju biti dobitni da bi listić bio dobitan!`)
+  }
+
+  const addToIndividualBets = (event, selection, odds) => {
+    // Don't allow betting on live events
+    if (event.status === 'live') {
+      alert('Klađenje na događaje koji su već započeli nije dozvoljeno!')
+      return
+    }
+
+    const newBet = {
+      id: Date.now() + Math.random(),
+      eventId: event.id,
+      eventName: `${event.homeTeam} vs ${event.awayTeam}`,
+      league: event.league,
+      selection,
+      odds,
+      amount: '',
+      potentialWin: 0,
+      sport: event.sport
+    }
+    
+    setIndividualBets([...individualBets, newBet])
+  }
+
+  const removeIndividualBet = (betId) => {
+    setIndividualBets(individualBets.filter(bet => bet.id !== betId))
+  }
+
+  const updateBetAmount = (betId, amount) => {
+    setIndividualBets(individualBets.map(bet => 
+      bet.id === betId 
+        ? { ...bet, amount, potentialWin: parseFloat(amount || 0) * bet.odds }
+        : bet
+    ))
   }
 
   const calculateTotalOdds = () => {
@@ -389,89 +601,240 @@ function App() {
 
   const connectWallet = async () => {
     try {
-      // Check if MetaMask is installed
+      // Reset activity timer
+      updateActivity()
+      
+      // Check if we're in a mobile browser with MetaMask
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      
       if (typeof window.ethereum !== 'undefined') {
-        // Request account access
-        const accounts = await window.ethereum.request({
-          method: 'eth_requestAccounts'
-        })
-        
-        if (accounts.length > 0) {
-          setIsWalletConnected(true)
+        try {
+          // For mobile browsers, we need to be more explicit about the request
+          const provider = window.ethereum
           
-          // Check if we're on Polygon network
-          const chainId = await window.ethereum.request({ method: 'eth_chainId' })
-          if (chainId !== '0x89') { // Polygon Mainnet
-            try {
-              // Try to switch to Polygon
-              await window.ethereum.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x89' }],
-              })
-            } catch (switchError) {
-              // If Polygon is not added, add it
-              if (switchError.code === 4902) {
-                await window.ethereum.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x89',
-                    chainName: 'Polygon Mainnet',
-                    nativeCurrency: {
-                      name: 'MATIC',
-                      symbol: 'MATIC',
-                      decimals: 18
-                    },
-                    rpcUrls: ['https://polygon-rpc.com/'],
-                    blockExplorerUrls: ['https://polygonscan.com/']
-                  }]
+          // Request account access
+          const accounts = await provider.request({
+            method: 'eth_requestAccounts'
+          })
+          
+          if (accounts && accounts.length > 0) {
+            // Check current network
+            const chainId = await provider.request({ method: 'eth_chainId' })
+            
+            // If not on Polygon, try to switch
+            if (chainId !== '0x89') {
+              try {
+                await provider.request({
+                  method: 'wallet_switchEthereumChain',
+                  params: [{ chainId: '0x89' }],
                 })
+              } catch (switchError) {
+                // If Polygon network is not added, add it
+                if (switchError.code === 4902) {
+                  await provider.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                      chainId: '0x89',
+                      chainName: 'Polygon Mainnet',
+                      nativeCurrency: {
+                        name: 'MATIC',
+                        symbol: 'MATIC',
+                        decimals: 18
+                      },
+                      rpcUrls: ['https://polygon-rpc.com/'],
+                      blockExplorerUrls: ['https://polygonscan.com/']
+                    }]
+                  })
+                }
               }
             }
+            
+            setIsWalletConnected(true)
+            // Check if user already has balance (simulate existing balance check)
+            const existingBalance = localStorage.getItem('userBalance')
+            if (existingBalance) {
+              setWalletBalance(parseFloat(existingBalance))
+            } else {
+              setWalletBalance(0) // Start with 0 if no existing balance
+            }
+            
+            // Start inactivity timer
+            startInactivityTimer()
+            
+            alert(`Novčanik uspješno povezan!\nAdresa: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}\nMreža: Polygon\nBalans: ${existingBalance || '0'} USDT`)
           }
-          
-          alert(`Wallet connected successfully!\nAddress: ${accounts[0]}\nNetwork: Polygon`)
+        } catch (error) {
+          if (error.code === 4001) {
+            alert('Konekcija odbijena od strane korisnika.')
+          } else {
+            console.error('MetaMask connection error:', error)
+            alert('Greška pri povezivanju s MetaMask-om. Molimo pokušajte ponovno.')
+          }
         }
       } else {
-        // If MetaMask is not installed, suggest alternatives
-        const useAlternative = window.confirm(
-          'MetaMask is not installed. Would you like to use an alternative wallet?\n\n' +
-          'Click OK to continue with MEW (MyEtherWallet) or Cancel to install MetaMask.'
-        )
-        
-        if (useAlternative) {
-          // Simulate MEW connection
-          setIsWalletConnected(true)
-          alert('Connected with MEW wallet!\nPlease ensure you are using Polygon network.')
+        // If no ethereum provider detected
+        if (isMobile) {
+          // On mobile, try to open MetaMask app or suggest installation
+          const userChoice = confirm(
+            'MetaMask nije detektiran.\n\n' +
+            'Kliknite OK za otvaranje MetaMask aplikacije ili Cancel za instalaciju.'
+          )
+          
+          if (userChoice) {
+            // Try to open MetaMask mobile app
+            window.location.href = `https://metamask.app.link/dapp/${window.location.host}${window.location.pathname}`
+          } else {
+            window.open('https://metamask.io/download/', '_blank')
+          }
         } else {
-          window.open('https://metamask.io/download/', '_blank')
+          // Desktop - suggest MetaMask installation
+          const installMetaMask = confirm(
+            'MetaMask nije instaliran.\n\n' +
+            'Kliknite OK za instalaciju MetaMask-a ili Cancel za korištenje alternativnog novčanika.'
+          )
+          
+          if (installMetaMask) {
+            window.open('https://metamask.io/download/', '_blank')
+          } else {
+            // Simulate alternative wallet connection
+            setIsWalletConnected(true)
+            setWalletBalance(0)
+            startInactivityTimer()
+            alert('Povezano s alternativnim novčanikom!\nMolimo osigurajte da koristite Polygon mrežu.')
+          }
         }
       }
     } catch (error) {
-      console.error('Error connecting wallet:', error)
-      alert('Failed to connect wallet. Please try again.')
+      console.error('Wallet connection error:', error)
+      alert('Neuspješno povezivanje novčanika. Molimo pokušajte ponovno.')
     }
   }
 
-  const placeBet = () => {
-    if (betSlip.length === 0 || !betAmount) return
+  const updateActivity = () => {
+    setLastActivity(Date.now())
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer)
+    }
+    if (isWalletConnected) {
+      startInactivityTimer()
+    }
+  }
+
+  const startInactivityTimer = () => {
+    const timer = setTimeout(() => {
+      disconnectWallet(true) // Auto disconnect
+    }, 10 * 60 * 1000) // 10 minutes
     
-    // Show Polygon blockchain warning before placing bet
-    const confirmed = window.confirm(
-      `VAŽNO: Uplate se vrše ISKLJUČIVO preko Polygon blockchain-a!\n\n` +
-      `Uplate preko drugih blockchain mreža rezultirat će nepovratnim gubitkom sredstava!\n\n` +
-      `Oklada detalji:\n` +
-      `Događaji: ${betSlip.length}\n` +
-      `Ukupni koeficijent: ${calculateTotalOdds().toFixed(2)}\n` +
-      `Iznos: ${betAmount} USDT\n` +
-      `Mogući dobitak: ${calculatePotentialWin().toFixed(2)} USDT\n\n` +
-      `Želite li nastaviti s uplatom?`
-    )
+    setInactivityTimer(timer)
+  }
+
+  const disconnectWallet = (isAutoDisconnect = false) => {
+    setIsWalletConnected(false)
+    setWalletBalance(0)
+    setAccumulatorBetSlip([])
+    setIndividualBets([])
+    setShowBalanceModal(false)
+    setShowDepositModal(false)
     
-    if (confirmed) {
-      alert(`Oklada uspješno postavljena!\nDogađaji: ${betSlip.length}\nUkupni koeficijent: ${calculateTotalOdds().toFixed(2)}\nIznos: ${betAmount} USDT\nMogući dobitak: ${calculatePotentialWin().toFixed(2)} USDT`)
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer)
+      setInactivityTimer(null)
+    }
+    
+    // Clear stored balance
+    localStorage.removeItem('userBalance')
+    
+    if (isAutoDisconnect) {
+      alert('Novčanik je automatski isključen zbog neaktivnosti (10 minuta).\nMolimo ponovno se prijavite.')
+    } else {
+      alert('Novčanik je uspješno isključen.')
+    }
+  }
+
+  // Add activity listeners
+  useEffect(() => {
+    const handleActivity = () => {
+      if (isWalletConnected) {
+        updateActivity()
+      }
+    }
+
+    // Listen for user activity
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
+    events.forEach(event => {
+      document.addEventListener(event, handleActivity, true)
+    })
+
+    return () => {
+      events.forEach(event => {
+        document.removeEventListener(event, handleActivity, true)
+      })
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer)
+      }
+    }
+  }, [isWalletConnected, inactivityTimer])
+
+  const placeSingleBet = (bet) => {
+    if (!isWalletConnected || !bet.amount || parseFloat(bet.amount) > walletBalance) return
+    
+    const amount = parseFloat(bet.amount)
+    
+    // Deduct from wallet balance
+    setWalletBalance(prev => prev - amount)
+    
+    // Add to user bets
+    const newUserBet = {
+      id: Date.now(),
+      eventName: bet.eventName,
+      league: bet.league,
+      selection: bet.selection,
+      odds: bet.odds,
+      amount: amount,
+      potentialWin: bet.potentialWin,
+      status: 'Active',
+      placedAt: new Date().toISOString(),
+      sport: bet.sport
+    }
+    
+    setUserBets([...userBets, newUserBet])
+    
+    // Remove from individual bets
+    removeIndividualBet(bet.id)
+    
+    alert(`Oklada uspješno postavljena!\nIznos: ${amount} USDT\nPotencijalni dobitak: ${bet.potentialWin.toFixed(2)} USDT\n\n⚠️ Transakcija se izvršava na Polygon blockchain mreži`)
+  }
+
+  const depositFunds = () => {
+    if (!depositAmount || parseFloat(depositAmount) < 10) return
+    
+    const amount = parseFloat(depositAmount)
+    const newBalance = walletBalance + amount
+    setWalletBalance(newBalance)
+    localStorage.setItem('userBalance', newBalance.toString())
+    setShowDepositModal(false)
+    setDepositAmount('')
+    
+    alert(`Uspješno uplaćeno ${amount} USDT!\n\n⚠️ Transakcija se izvršava na Polygon blockchain mreži\nNovi balans: ${newBalance.toFixed(2)} USDT`)
+  }
+
+  const withdrawFunds = () => {
+    if (walletBalance <= 0) {
+      alert('Nemate sredstava za povlačenje.')
+      return
+    }
+    
+    const amount = prompt(`Unesite iznos za povlačenje (dostupno: ${walletBalance.toFixed(2)} USDT):`)
+    
+    if (amount && parseFloat(amount) > 0 && parseFloat(amount) <= walletBalance) {
+      const withdrawAmount = parseFloat(amount)
+      const newBalance = walletBalance - withdrawAmount
+      setWalletBalance(newBalance)
+      localStorage.setItem('userBalance', newBalance.toString())
       
-      setBetSlip([])
-      setBetAmount('')
+      alert(`Uspješno povučeno ${withdrawAmount} USDT na vaš privatni wallet!\n\n⚠️ Transakcija se izvršava na Polygon blockchain mreži\nNovi balans: ${newBalance.toFixed(2)} USDT`)
+    } else if (amount) {
+      alert('Neispravna vrijednost ili nedovoljno sredstava.')
     }
   }
 
@@ -600,7 +963,7 @@ function App() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    addToBetSlip(event, event.homeTeam, event.odds.home);
+                    addToAccumulatorBetSlip(event, event.homeTeam, event.odds.home);
                   }}
                 >
                   {event.odds.home}
@@ -613,7 +976,7 @@ function App() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      addToBetSlip(event, 'Draw', event.odds.draw);
+                      addToAccumulatorBetSlip(event, 'Draw', event.odds.draw);
                     }}
                   >
                     {event.odds.draw}
@@ -626,7 +989,7 @@ function App() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    addToBetSlip(event, event.awayTeam, event.odds.away);
+                    addToAccumulatorBetSlip(event, event.awayTeam, event.odds.away);
                   }}
                 >
                   {event.odds.away}
@@ -876,24 +1239,27 @@ function App() {
       )}
       </div>
 
-      {/* Bet Slip */}
-      {betSlip.length > 0 && (
+      {/* Accumulator Bet Slip */}
+      {accumulatorBetSlip.length > 0 && (
         <div className="fixed bottom-16 left-4 right-4 bg-white rounded-lg shadow-lg p-4 z-10">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-medium">Bet Slip ({betSlip.length})</span>
-            <span className="text-sm text-muted-foreground">Total: {calculateTotalOdds().toFixed(2)}</span>
+            <span className="font-medium">Akumulator ({accumulatorBetSlip.length})</span>
+            <span className="text-sm text-muted-foreground">Ukupni koeficijent: {calculateAccumulatorOdds().toFixed(2)}</span>
           </div>
           
           <div className="space-y-2 mb-3 max-h-32 overflow-y-auto">
-            {betSlip.map(bet => (
+            {accumulatorBetSlip.map(bet => (
               <div key={bet.eventId} className="flex items-center justify-between text-sm">
-                <span>{bet.selection}</span>
+                <div className="flex-1">
+                  <div className="font-medium">{bet.eventName}</div>
+                  <div className="text-xs text-gray-500">{bet.league} - {bet.selection}</div>
+                </div>
                 <div className="flex items-center gap-2">
-                  <span>{bet.odds}</span>
+                  <span className="text-blue-600">{bet.odds}</span>
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => removeFromBetSlip(bet.eventId)}
+                    onClick={() => removeFromAccumulatorBetSlip(bet.eventId)}
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -905,19 +1271,139 @@ function App() {
           <div className="flex gap-2">
             <Input
               type="number"
-              placeholder="Amount (USDT)"
-              value={betAmount}
-              onChange={(e) => setBetAmount(e.target.value)}
+              placeholder="Iznos USDT"
+              value={accumulatorAmount}
+              onChange={(e) => setAccumulatorAmount(e.target.value)}
               className="flex-1"
             />
             <Button 
-              onClick={placeBet}
-              disabled={!isWalletConnected || !betAmount}
+              onClick={placeAccumulatorBet}
+              disabled={!isWalletConnected || !accumulatorAmount || parseFloat(accumulatorAmount) > walletBalance}
               className="bg-blue-600"
             >
-              Bet {calculatePotentialWin().toFixed(2)} USDT
+              Postavi {calculateAccumulatorPotentialWin().toFixed(2)} USDT
             </Button>
           </div>
+          
+          <div className="text-xs text-gray-500 mt-2">
+            ⚠️ Svi događaji moraju biti dobitni da bi listić bio dobitan!
+          </div>
+        </div>
+      )}
+
+      {/* Wallet Balance Display - Simple */}
+      {isWalletConnected && (
+        <div className="fixed top-20 right-4 z-10">
+          <Button 
+            variant="outline" 
+            className="bg-white shadow-lg"
+            onClick={() => setShowBalanceModal(true)}
+          >
+            💰 {walletBalance.toFixed(2)} USDT
+          </Button>
+        </div>
+      )}
+
+      {/* Balance Modal */}
+      {showBalanceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+          <Card className="bg-white p-6 m-4 max-w-sm w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Novčanik
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowBalanceModal(false)}
+                >
+                  ✕
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{walletBalance.toFixed(2)} USDT</div>
+                  <div className="text-sm text-gray-500">Dostupno za klađenje</div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => {
+                      setShowBalanceModal(false)
+                      setShowDepositModal(true)
+                    }}
+                  >
+                    💳 Uplati
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setShowBalanceModal(false)
+                      withdrawFunds()
+                    }}
+                  >
+                    💸 Povuci
+                  </Button>
+                </div>
+                
+                <Button 
+                  variant="destructive"
+                  className="w-full"
+                  onClick={() => {
+                    setShowBalanceModal(false)
+                    disconnectWallet()
+                  }}
+                >
+                  🔌 Isključi novčanik
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Deposit Modal */}
+      {showDepositModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+          <Card className="bg-white p-6 m-4 max-w-sm w-full">
+            <CardHeader>
+              <CardTitle>Uplata USDT</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Input
+                  type="number"
+                  placeholder="Iznos za uplatu"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                />
+                <div className="text-sm text-gray-600">
+                  Minimalna uplata: 10 USDT
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={depositFunds}
+                    disabled={!depositAmount || parseFloat(depositAmount) < 10}
+                    className="flex-1"
+                  >
+                    Potvrdi uplatu
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowDepositModal(false)
+                      setDepositAmount('')
+                    }}
+                  >
+                    Odustani
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
