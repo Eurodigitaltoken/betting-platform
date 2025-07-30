@@ -52,6 +52,7 @@ function App() {
   const [showBalanceModal, setShowBalanceModal] = useState(false)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [inactivityTimer, setInactivityTimer] = useState(null)
+  const [showWalletModal, setShowWalletModal] = useState(false)
 
   const sports = [
     { id: 'all', name: 'All', icon: '🏆' },
@@ -599,114 +600,121 @@ function App() {
     return amount * totalOdds
   }
 
-  const connectWallet = async () => {
+  const showWalletSelection = () => {
+    setShowWalletModal(true)
+  }
+
+  const connectMetaMask = async () => {
     try {
-      // Reset activity timer
       updateActivity()
       
-      // Check if we're in a mobile browser with MetaMask
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      
       if (typeof window.ethereum !== 'undefined') {
-        try {
-          // For mobile browsers, we need to be more explicit about the request
-          const provider = window.ethereum
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
+        })
+        
+        if (accounts && accounts.length > 0) {
+          // Check and switch to Polygon network
+          const chainId = await window.ethereum.request({ method: 'eth_chainId' })
           
-          // Request account access
-          const accounts = await provider.request({
-            method: 'eth_requestAccounts'
-          })
-          
-          if (accounts && accounts.length > 0) {
-            // Check current network
-            const chainId = await provider.request({ method: 'eth_chainId' })
-            
-            // If not on Polygon, try to switch
-            if (chainId !== '0x89') {
-              try {
-                await provider.request({
-                  method: 'wallet_switchEthereumChain',
-                  params: [{ chainId: '0x89' }],
+          if (chainId !== '0x89') {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x89' }],
+              })
+            } catch (switchError) {
+              if (switchError.code === 4902) {
+                await window.ethereum.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x89',
+                    chainName: 'Polygon Mainnet',
+                    nativeCurrency: {
+                      name: 'MATIC',
+                      symbol: 'MATIC',
+                      decimals: 18
+                    },
+                    rpcUrls: ['https://polygon-rpc.com/'],
+                    blockExplorerUrls: ['https://polygonscan.com/']
+                  }]
                 })
-              } catch (switchError) {
-                // If Polygon network is not added, add it
-                if (switchError.code === 4902) {
-                  await provider.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [{
-                      chainId: '0x89',
-                      chainName: 'Polygon Mainnet',
-                      nativeCurrency: {
-                        name: 'MATIC',
-                        symbol: 'MATIC',
-                        decimals: 18
-                      },
-                      rpcUrls: ['https://polygon-rpc.com/'],
-                      blockExplorerUrls: ['https://polygonscan.com/']
-                    }]
-                  })
-                }
               }
             }
-            
-            setIsWalletConnected(true)
-            // Check if user already has balance (simulate existing balance check)
-            const existingBalance = localStorage.getItem('userBalance')
-            if (existingBalance) {
-              setWalletBalance(parseFloat(existingBalance))
-            } else {
-              setWalletBalance(0) // Start with 0 if no existing balance
-            }
-            
-            // Start inactivity timer
-            startInactivityTimer()
-            
-            alert(`Novčanik uspješno povezan!\nAdresa: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}\nMreža: Polygon\nBalans: ${existingBalance || '0'} USDT`)
           }
-        } catch (error) {
-          if (error.code === 4001) {
-            alert('Konekcija odbijena od strane korisnika.')
-          } else {
-            console.error('MetaMask connection error:', error)
-            alert('Greška pri povezivanju s MetaMask-om. Molimo pokušajte ponovno.')
-          }
+          
+          setIsWalletConnected(true)
+          const existingBalance = localStorage.getItem('userBalance')
+          setWalletBalance(existingBalance ? parseFloat(existingBalance) : 0)
+          setShowWalletModal(false)
+          startInactivityTimer()
+          
+          alert(`MetaMask uspješno povezan!\nAdresa: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}\nMreža: Polygon\nBalans: ${existingBalance || '0'} USDT`)
         }
       } else {
-        // If no ethereum provider detected
+        // Try to open MetaMask mobile app
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        
         if (isMobile) {
-          // On mobile, try to open MetaMask app or suggest installation
-          const userChoice = confirm(
-            'MetaMask nije detektiran.\n\n' +
-            'Kliknite OK za otvaranje MetaMask aplikacije ili Cancel za instalaciju.'
-          )
-          
-          if (userChoice) {
-            // Try to open MetaMask mobile app
-            window.location.href = `https://metamask.app.link/dapp/${window.location.host}${window.location.pathname}`
-          } else {
-            window.open('https://metamask.io/download/', '_blank')
-          }
+          window.location.href = `https://metamask.app.link/dapp/${window.location.host}${window.location.pathname}`
         } else {
-          // Desktop - suggest MetaMask installation
-          const installMetaMask = confirm(
-            'MetaMask nije instaliran.\n\n' +
-            'Kliknite OK za instalaciju MetaMask-a ili Cancel za korištenje alternativnog novčanika.'
-          )
-          
-          if (installMetaMask) {
-            window.open('https://metamask.io/download/', '_blank')
-          } else {
-            // Simulate alternative wallet connection
-            setIsWalletConnected(true)
-            setWalletBalance(0)
-            startInactivityTimer()
-            alert('Povezano s alternativnim novčanikom!\nMolimo osigurajte da koristite Polygon mrežu.')
-          }
+          window.open('https://metamask.io/download/', '_blank')
         }
       }
     } catch (error) {
-      console.error('Wallet connection error:', error)
-      alert('Neuspješno povezivanje novčanika. Molimo pokušajte ponovno.')
+      console.error('MetaMask connection error:', error)
+      if (error.code === 4001) {
+        alert('Konekcija odbijena od strane korisnika.')
+      } else {
+        alert('Greška pri povezivanju s MetaMask-om. Molimo pokušajte ponovno.')
+      }
+    }
+  }
+
+  const connectMEW = async () => {
+    try {
+      updateActivity()
+      
+      // Check if MEW wallet is available
+      if (typeof window.ethereum !== 'undefined' && window.ethereum.isMEWwallet) {
+        const accounts = await window.ethereum.request({
+          method: 'eth_requestAccounts'
+        })
+        
+        if (accounts && accounts.length > 0) {
+          setIsWalletConnected(true)
+          const existingBalance = localStorage.getItem('userBalance')
+          setWalletBalance(existingBalance ? parseFloat(existingBalance) : 0)
+          setShowWalletModal(false)
+          startInactivityTimer()
+          
+          alert(`MEW Wallet uspješno povezan!\nAdresa: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}\nMreža: Polygon\nBalans: ${existingBalance || '0'} USDT`)
+        }
+      } else {
+        // Redirect to MEW wallet
+        window.open('https://www.myetherwallet.com/wallet/access/software?networkName=matic', '_blank')
+      }
+    } catch (error) {
+      console.error('MEW connection error:', error)
+      alert('Greška pri povezivanju s MEW novčanikom. Molimo pokušajte ponovno.')
+    }
+  }
+
+  const connectWalletConnect = async () => {
+    try {
+      updateActivity()
+      
+      // Simulate WalletConnect connection
+      setIsWalletConnected(true)
+      const existingBalance = localStorage.getItem('userBalance')
+      setWalletBalance(existingBalance ? parseFloat(existingBalance) : 0)
+      setShowWalletModal(false)
+      startInactivityTimer()
+      
+      alert(`WalletConnect uspješno povezan!\nMreža: Polygon\nBalans: ${existingBalance || '0'} USDT\n\nNapomena: Ovo je simulacija WalletConnect konekcije.`)
+    } catch (error) {
+      console.error('WalletConnect connection error:', error)
+      alert('Greška pri povezivanju s WalletConnect-om. Molimo pokušajte ponovno.')
     }
   }
 
@@ -1022,7 +1030,7 @@ function App() {
             <span className="font-bold text-lg">BetScore</span>
           </div>
           <Button 
-            onClick={connectWallet}
+            onClick={showWalletSelection}
             disabled={isWalletConnected}
             variant="secondary"
             size="sm"
@@ -1359,6 +1367,74 @@ function App() {
                 >
                   🔌 Isključi novčanik
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Wallet Selection Modal */}
+      {showWalletModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+          <Card className="bg-white p-6 m-4 max-w-sm w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Odaberite novčanik
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowWalletModal(false)}
+                >
+                  ✕
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Button 
+                  className="w-full flex items-center justify-start gap-3 h-12"
+                  onClick={connectMetaMask}
+                >
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                    🦊
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium">MetaMask</div>
+                    <div className="text-xs text-gray-500">Najpopularniji novčanik</div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  className="w-full flex items-center justify-start gap-3 h-12"
+                  onClick={connectMEW}
+                >
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    MEW
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium">MyEtherWallet</div>
+                    <div className="text-xs text-gray-500">Sigurni web novčanik</div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  className="w-full flex items-center justify-start gap-3 h-12"
+                  onClick={connectWalletConnect}
+                >
+                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    WC
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium">WalletConnect</div>
+                    <div className="text-xs text-gray-500">Povezivanje s mobilnim novčanicima</div>
+                  </div>
+                </Button>
+                
+                <div className="text-xs text-gray-500 text-center mt-4">
+                  Svi novčanici rade na Polygon blockchain mreži
+                </div>
               </div>
             </CardContent>
           </Card>
