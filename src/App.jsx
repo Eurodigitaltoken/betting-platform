@@ -53,6 +53,7 @@ function App() {
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [inactivityTimer, setInactivityTimer] = useState(null)
   const [showWalletModal, setShowWalletModal] = useState(false)
+  const [showOdds, setShowOdds] = useState(true)
 
   const sports = [
     { id: 'all', name: 'All', icon: '🏆' },
@@ -530,6 +531,12 @@ function App() {
     
     const amount = parseFloat(accumulatorAmount)
     
+    // Check maximum bet limit
+    if (amount > 100) {
+      alert('Maksimalni iznos oklade po listiću je 100 USDT!')
+      return
+    }
+    
     // Deduct from wallet balance
     setWalletBalance(prev => prev - amount)
     localStorage.setItem('userBalance', (walletBalance - amount).toString())
@@ -691,8 +698,8 @@ function App() {
           alert(`MEW Wallet uspješno povezan!\nAdresa: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}\nMreža: Polygon\nBalans: ${existingBalance || '0'} USDT`)
         }
       } else {
-        // Redirect to MEW wallet
-        window.open('https://www.myetherwallet.com/wallet/access/software?networkName=matic', '_blank')
+        // Redirect to MEW wallet with correct URL
+        window.open('https://www.myetherwallet.com/wallet/access', '_blank')
       }
     } catch (error) {
       console.error('MEW connection error:', error)
@@ -962,7 +969,7 @@ function App() {
               </Button>
             </div>
             
-            {event.odds && (
+            {event.odds && showOdds && (
               <div className="flex gap-1">
                 <Button 
                   variant="outline" 
@@ -1112,7 +1119,23 @@ function App() {
           
           <div className="flex items-center gap-2">
             <span className="text-white text-sm">Odds</span>
-            <div className="w-10 h-6 bg-gray-300 rounded-full"></div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`w-12 h-6 rounded-full p-0 transition-colors ${
+                showOdds ? 'bg-blue-500' : 'bg-gray-400'
+              }`}
+              onClick={() => setShowOdds(!showOdds)}
+            >
+              <div
+                className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                  showOdds ? 'translate-x-3' : 'translate-x-0'
+                }`}
+              />
+            </Button>
+            <span className="text-xs text-gray-300">
+              {showOdds ? 'Prikazane' : 'Skrivene'}
+            </span>
           </div>
         </div>
 
@@ -1138,12 +1161,8 @@ function App() {
 
         {/* Events List */}
       {activeTab === "home" && (
-        <div className="space-y-2 mb-20">
-          <h3 className="text-white text-sm mb-2">
-            {selectedSport === 'football' ? 'Football' : 'Sports'} today - livescore and schedule for Premier League, Champions League
-          </h3>
-          
-          {getFilteredEvents().map(event => (
+        <div className="space-y-4">
+          {filteredEvents.map(event => (
             <EventItem key={event.id} event={event} />
           ))}
         </div>
@@ -1279,14 +1298,15 @@ function App() {
           <div className="flex gap-2">
             <Input
               type="number"
-              placeholder="Iznos USDT"
+              placeholder="Iznos USDT (max 100)"
               value={accumulatorAmount}
               onChange={(e) => setAccumulatorAmount(e.target.value)}
               className="flex-1"
+              max="100"
             />
             <Button 
               onClick={placeAccumulatorBet}
-              disabled={!isWalletConnected || !accumulatorAmount || parseFloat(accumulatorAmount) > walletBalance}
+              disabled={!isWalletConnected || !accumulatorAmount || parseFloat(accumulatorAmount) > walletBalance || parseFloat(accumulatorAmount) > 100}
               className="bg-blue-600"
             >
               Postavi {calculateAccumulatorPotentialWin().toFixed(2)} USDT
@@ -1294,7 +1314,8 @@ function App() {
           </div>
           
           <div className="text-xs text-gray-500 mt-2">
-            ⚠️ Svi događaji moraju biti dobitni da bi listić bio dobitan!
+            ⚠️ Svi događaji moraju biti dobitni da bi listić bio dobitan!<br/>
+            💰 Maksimalni iznos oklade: 100 USDT po listiću
           </div>
         </div>
       )}
